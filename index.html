@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>VRM Viewer GTA Style</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #1a1a1a; font-family: sans-serif; }
         canvas { display: block; cursor: crosshair; }
@@ -171,11 +172,9 @@
                 const spine = currentVrm.humanoid.getRawBoneNode('spine');
                 const head = currentVrm.humanoid.getRawBoneNode('head');
 
-                // --- ВИПРАВЛЕНИЙ РОЗРАХУНОК РУХУ ---
                 let isMoving = false;
                 const moveDir = new THREE.Vector3(0, 0, 0);
 
-                // Додано мінуси: тепер "вперед" - це напрямок ВІД камери, а не ДО неї
                 const forward = new THREE.Vector3(-Math.sin(cameraAzimuth), 0, -Math.cos(cameraAzimuth));
                 const right = new THREE.Vector3(Math.cos(cameraAzimuth), 0, -Math.sin(cameraAzimuth));
 
@@ -189,11 +188,9 @@
                     const moveStep = moveDir.clone().multiplyScalar(moveSpeed * delta);
                     currentVrm.scene.position.add(moveStep);
 
-                    // Розвертаємо модель обличчям по ходу руху
                     const targetRotation = Math.atan2(moveDir.x, moveDir.z) + Math.PI;
                     currentVrm.scene.rotation.y = targetRotation;
 
-                    // Анімація бігу
                     const walkCycle = t * 15; 
                     if (leftArm && rightArm && leftLeg && rightLeg) {
                         leftArm.quaternion.setFromEuler(new THREE.Euler(Math.sin(walkCycle) * 0.7, 0, 1.0));
@@ -205,7 +202,6 @@
                     if (head) head.quaternion.setFromEuler(new THREE.Euler(0, 0, 0));
 
                 } else {
-                    // Анімація спокою
                     const breath = Math.sin(t * 1.5) * 0.02;
                     const headSway = Math.sin(t * 0.7) * 0.05;
 
@@ -221,7 +217,6 @@
                     if (head) head.quaternion.setFromEuler(new THREE.Euler(0, headSway, 0));
                 }
 
-                // Оновлення позиції камери (орбіта навколо персонажа)
                 const targetPos = currentVrm.scene.position.clone().add(new THREE.Vector3(0, 1.2, 0));
 
                 camera.position.x = targetPos.x + cameraRadius * Math.sin(cameraAzimuth) * Math.cos(cameraElevation);
@@ -230,7 +225,6 @@
 
                 camera.lookAt(targetPos);
 
-                // Моргання
                 let blinkValue = 0;
                 const blinkCycle = t % 4;
                 if (blinkCycle > 3.8) blinkValue = Math.sin((blinkCycle - 3.8) * Math.PI * 5);
