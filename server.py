@@ -1,7 +1,6 @@
 from aiohttp import web
 import socketio
 
-# Створюємо Socket.IO сервер
 sio = socketio.AsyncServer(cors_allowed_origins='*')
 app = web.Application()
 sio.attach(app)
@@ -11,7 +10,16 @@ players = {}
 @sio.event
 async def connect(sid, environ):
     print(f"Гравець підключився: {sid}")
-    players[sid] = {'x': 0, 'y': 0, 'z': 0, 'rotationY': 3.14}
+    
+    players[sid] = {
+        'x': 0, 
+        'y': 0, 
+        'z': 0, 
+        'rotationY': 3.14,
+        'isMoving': False,
+        'nickname': 'Гравець'
+    }
+    
     await sio.emit('currentPlayers', players, to=sid)
     await sio.emit('newPlayer', {'id': sid, 'playerInfo': players[sid]}, skip_sid=sid)
 
@@ -28,7 +36,6 @@ async def disconnect(sid):
         del players[sid]
         await sio.emit('playerDisconnected', sid)
 
-# Роздача статичних файлів (index.html, model.vrm)
 async def index(request):
     return web.FileResponse('./index.html')
 

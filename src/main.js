@@ -23,7 +23,8 @@ class GameApp {
         this.inputManager = new InputManager();
         this.cameraController = new CameraController(this.camera, this.renderer.domElement);
         
-        this.localPlayer = new Player(this.scene);
+        const initialNickname = document.getElementById('nicknameInput').value;
+        this.localPlayer = new Player(this.scene, initialNickname);
         this.remotePlayers = {}; 
 
         this.socket = io();
@@ -66,8 +67,10 @@ class GameApp {
                 if (isLocal) {
                     this.localPlayer.setVRM(vrm);
                     document.getElementById('error-msg').style.display = 'none';
+                    this.socket.emit('playerMovement', this.localPlayer.getState());
                 } else {
-                    const rPlayer = new Player(this.scene);
+                    const nickname = (startInfo && startInfo.nickname) ? startInfo.nickname : "Unknown";
+                    const rPlayer = new Player(this.scene, nickname);
                     rPlayer.setVRM(vrm, startInfo, startInfo.rotationY);
                     rPlayer.isMoving = startInfo.isMoving || false;
                     this.remotePlayers[playerId] = rPlayer;
@@ -86,7 +89,7 @@ class GameApp {
     setupNetworking() {
         this.socket.on('currentPlayers', (players) => {
             for (let id in players) {
-                if (id !== this.socket.id) this.loadVRMModel('./assets/model.vrm', false, id, players[id]);
+                                if (id !== this.socket.id) this.loadVRMModel('./assets/model.vrm', false, id, players[id]);
             }
         });
 
@@ -100,6 +103,10 @@ class GameApp {
                 rPlayer.vrm.scene.position.set(data.playerInfo.x, data.playerInfo.y, data.playerInfo.z);
                 rPlayer.vrm.scene.rotation.y = data.playerInfo.rotationY;
                 rPlayer.isMoving = data.playerInfo.isMoving;
+                
+                if (data.playerInfo.nickname && data.playerInfo.nickname !== rPlayer.nickname) {
+                    rPlayer.updateNickname(data.playerInfo.nickname);
+                }
             }
         });
 
@@ -117,6 +124,16 @@ class GameApp {
             if (!file) return;
             const url = URL.createObjectURL(file);
             this.loadVRMModel(url, true);
+        });
+
+        const nicknameInput = document.getElementById('nicknameInput');
+        nicknameInput.addEventListener('input', (e) => {
+            const newName = e.target.value || "Гравець";
+            this.localPlayer.updateNickname(newName);
+            
+            if (this.localPlayer.vrm) {
+                this.socket.emit('playerMovement', this.localPlayer.getState());
+            }
         });
     }
 

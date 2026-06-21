@@ -1,24 +1,82 @@
 import * as THREE from 'three';
 
 export class Player {
-    constructor(scene) {
+    constructor(scene, nickname = "Player") {
         this.scene = scene;
         this.vrm = null;
         this.isMoving = false;
         this.lastMovingState = false;
         this.speed = 3.5;
+        this.nickname = nickname;
+        this.nameTagSprite = null; 
+    }
+
+    createNameTag(text) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 128;
+        const context = canvas.getContext('2d');
+
+        context.font = 'bold 45px sans-serif';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        
+        context.lineWidth = 6;
+        context.strokeStyle = 'black';
+        context.strokeText(text, 256, 64);
+        
+        context.fillStyle = 'white';
+        context.fillText(text, 256, 64);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        const material = new THREE.SpriteMaterial({ map: texture, depthTest: false });
+        const sprite = new THREE.Sprite(material);
+        
+        sprite.position.set(0, 1.9, 0);
+        sprite.scale.set(1.5, 0.375, 1);
+        
+        return sprite;
+    }
+
+    updateNickname(newName) {
+        this.nickname = newName;
+        
+        if (this.vrm) {
+            if (this.nameTagSprite) {
+                this.vrm.scene.remove(this.nameTagSprite);
+                this.nameTagSprite.material.map.dispose();
+                this.nameTagSprite.material.dispose();
+            }
+            
+            this.nameTagSprite = this.createNameTag(this.nickname);
+            this.vrm.scene.add(this.nameTagSprite);
+        }
     }
 
     setVRM(vrm, startPos = { x: 0, y: 0, z: 0 }, rotationY = Math.PI) {
-        if (this.vrm) this.scene.remove(this.vrm.scene);
+        if (this.vrm) {
+            this.scene.remove(this.vrm.scene);
+            if (this.nameTagSprite) this.vrm.scene.remove(this.nameTagSprite);
+        }
+        
         this.vrm = vrm;
         this.vrm.scene.position.set(startPos.x, startPos.y, startPos.z);
         this.vrm.scene.rotation.y = rotationY;
+        
+        this.nameTagSprite = this.createNameTag(this.nickname);
+        this.vrm.scene.add(this.nameTagSprite);
+
         this.scene.add(this.vrm.scene);
     }
 
     remove() {
-        if (this.vrm) this.scene.remove(this.vrm.scene);
+        if (this.vrm) {
+            this.scene.remove(this.vrm.scene);
+            if (this.nameTagSprite) {
+                this.nameTagSprite.material.map.dispose();
+                this.nameTagSprite.material.dispose();
+            }
+        }
     }
 
     update(delta, t, input = null, cameraAzimuth = 0) {
@@ -96,7 +154,8 @@ export class Player {
             y: this.vrm.scene.position.y,
             z: this.vrm.scene.position.z,
             rotationY: this.vrm.scene.rotation.y,
-            isMoving: this.isMoving
+            isMoving: this.isMoving,
+            nickname: this.nickname
         };
     }
 }

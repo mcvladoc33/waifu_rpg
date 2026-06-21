@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <title>VRM Viewer GTA Style Multiplayer</title>
@@ -32,11 +32,15 @@
 
     <div id="ui">
         <strong>VRM Multiplayer Viewer</strong><br>
-        <small>🖱️ <b>Клікніть по екрану</b>, щоб захопити мишку (огляд)</small><br>
-        <small>⌨️ <b>W, A, S, D</b> — рух | <b>Esc</b> — звільнити курсор</small><br><br>
-        <label>Завантажити модель вручну:</label><br>
+        <small>🖱️ <b>Click the screen</b> to lock mouse (look around)</small><br>
+        <small>⌨️ <b>W, A, S, D</b> — move | <b>Esc</b> — unlock cursor</small><br><br>
+        
+        <label>Your nickname:</label><br>
+        <input type="text" id="nicknameInput" value="Player"><br><br>
+
+        <label>Load model manually:</label><br>
         <input type="file" id="fileInput" accept=".vrm">
-        <div id="error-msg">Помилка завантаження. Спробуйте через кнопку вище.</div>
+        <div id="error-msg">Loading error. Please try using the button above.</div>
     </div>
     
     <div id="aim-overlay">+</div>
