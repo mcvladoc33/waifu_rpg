@@ -1,17 +1,24 @@
 export class InputManager {
     constructor() {
         this.keys = { w: false, a: false, s: false, d: false };
+        this.keyMap = {
+            'KeyW': 'w',
+            'KeyA': 'a',
+            'KeyS': 's',
+            'KeyD': 'd'
+        };
         this.initListeners();
     }
 
     initListeners() {
         window.addEventListener('keydown', (e) => {
-            const key = e.key.toLowerCase();
-            if (this.keys.hasOwnProperty(key)) this.keys[key] = true;
+            const mappedKey = this.keyMap[e.code];
+            if (mappedKey) this.keys[mappedKey] = true;
         });
+        
         window.addEventListener('keyup', (e) => {
-            const key = e.key.toLowerCase();
-            if (this.keys.hasOwnProperty(key)) this.keys[key] = false;
+            const mappedKey = this.keyMap[e.code];
+            if (mappedKey) this.keys[mappedKey] = false;
         });
     }
 
