@@ -24,8 +24,11 @@ export class CameraController {
         document.addEventListener('mousemove', (e) => {
             if (!this.isPointerLocked) return;
             const sensitivity = 0.003;
+            
             this.azimuth -= e.movementX * sensitivity;
-            this.elevation -= e.movementY * sensitivity;
+            
+            this.elevation += e.movementY * sensitivity; 
+            
             this.elevation = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, this.elevation));
         });
 
